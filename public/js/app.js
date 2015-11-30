@@ -45,18 +45,19 @@ $(function () {
         $.get('/api/days', function(data) {
             days = data;
             setDayButtons();
+            //TODO: show all itinerary items also
         });
     };
 
-    var getPlaceObject = function (typeOfPlace, nameOfPlace) {
+    // var getPlaceObject = function (typeOfPlace, nameOfPlace) {
 
-        var placeCollection = window['all_' + typeOfPlace];
+    //     var placeCollection = window['all_' + typeOfPlace];
 
-        return placeCollection.filter(function (place) {
-            return place.name === nameOfPlace;
-        })[0];
+    //     return placeCollection.filter(function (place) {
+    //         return place.name === nameOfPlace;
+    //     })[0];
 
-    };
+    // };
 
     var getIndexOfPlace = function (nameOfPlace, collection) {
         var i = 0;
@@ -158,22 +159,36 @@ $(function () {
     loadAllDays();
 
     $addPlaceButton.on('click', function () {
-
         var $this = $(this);
         var sectionName = $this.parent().attr('id').split('-')[0];
         var $listToAppendTo = $('#' + sectionName + '-list').find('ul');
         var placeName = $this.siblings('select').val();
-        var placeObj = getPlaceObject(sectionName, placeName);
 
-        var createdMapMarker = drawLocation(map, placeObj.place[0].location, {
-            icon: placeMapIcons[sectionName]
-        });
+        // console.log("sectionName: " + sectionName + " placeName: " + placeName + " currentDay: " + currentDay);
 
-        days[currentDay - 1].push({place: placeObj, marker: createdMapMarker, section: sectionName});
-        $listToAppendTo.append(createItineraryItem(placeName));
+        // var placeObj = getPlaceObject(sectionName, placeName);
 
-        mapFit();
+        // var createdMapMarker = drawLocation(map, placeObj.place[0].location, {
+        //     icon: placeMapIcons[sectionName]
+        // });
 
+        // days[currentDay - 1].push({place: placeObj, marker: createdMapMarker, section: sectionName});
+
+        $.post('/api/days/' + currentDay.toString() + '/' + sectionName,
+                {placeName: placeName})
+                .done(function(place){
+                    // console.log("posting to /api/days");
+                    // console.dir(data);
+
+                    // Object.keys(place).forEach(function(key){
+                    //     $listToAppendTo = $('#' + key + '-list').find('ul');
+                    //     place[key].forEach(function(dataKey){
+                    //         $listToAppendTo.append(createItineraryItem(dataKey.name));
+                    //     })
+                    // });
+                    $listToAppendTo.append(createItineraryItem(place.name));
+                    mapFit();
+                });  
     });
 
     $placeLists.on('click', '.remove', function (e) {
