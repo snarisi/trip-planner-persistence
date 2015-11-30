@@ -5,6 +5,7 @@ var Day = Models.Day;
 var Restaurant = Models.Restaurant;
 var Hotel = Models.Hotel;
 var Activity = Models.Activity;
+var Promise = require('bluebird');
 
 //get all days
 router.get('/api/days', function (req, res, next) {
@@ -22,9 +23,24 @@ router.get('/api/days/:id', function(req, res, next) {
 
 //delete a day
 router.delete('/api/days/:id', function (req, res, next) {
-	Day.remove({ _id: req.params.id }).exec().then(function () {
-		res.send('Deletion successful');
-	});
+	Day.remove({ number: req.params.id }).exec()
+	.then(function() {
+		return Day.find({ number: {$gt: req.params.id } }).exec()
+	})
+	.then(function (days) {
+		var promises = []
+		days.forEach(function(day) {
+			day.number--;
+			promises.push(day.save());
+		});
+		return Promise.all(promises);
+	})
+	.then(function () {
+		return Day.find({}).exec();
+	})
+	.then(function(days) {
+		res.json(days);
+	})
 });
 
 //add a new day
@@ -33,11 +49,16 @@ router.post('/api/days', function (req, res, next) {
 	.sort({number: -1})
 	.limit(1)
 	.exec().then(function(days) {
-		//console.log('DAYS: ', days);
-		return Day.create({number: days[0].number + 1});
-	}).then(function(day) {
+		console.log('DAYS: ', days);
+		var newDayNum = days[0] ? days[0].number + 1 : 1;
+		return Day.create({number: newDayNum});
+	})
+	.then(function () {
+		return Day.find({}).exec();
+	})
+	.then(function(days) {
 		//console.log('day created');
-		res.json(day);
+		res.json(days);
 	});
 });
 

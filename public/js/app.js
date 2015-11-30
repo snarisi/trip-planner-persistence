@@ -37,7 +37,7 @@ $(function () {
     var setDayButtons = function () {
         $dayButtons.find('button').not('.add-day').remove();
         days.forEach(function (day, index) {
-            $addDayButton.before(createDayButton(index + 1));
+            $addDayButton.before(createDayButton(day.number));
         });
     };
 
@@ -93,11 +93,16 @@ $(function () {
 
         reset();
 
-        days.splice(dayNum - 1, 1);
-
-        setDayButtons();
-        setDay(1);
-
+//        days.splice(dayNum - 1, 1);
+		$.ajax({
+			url: '/api/days/' + dayNum.toString(),
+			method: 'DELETE',
+			success: function(data) {
+				days = data;
+				setDayButtons();
+				setDay(1);			
+			}
+		});		
     };
 
     var mapFit = function () {
@@ -191,10 +196,11 @@ $(function () {
 
     $addDayButton.on('click', function () {
         $.post('/api/days', function(data){     
-            var $newDayButton = createDayButton(data.number);
+            days = data;
+			var newDay = days[days.length - 1];
+            var $newDayButton = createDayButton(newDay.number);
             $addDayButton.before($newDayButton);
-            days.push(data);
-            setDay(data.number);
+            setDay(newDay.number);
         });
         
     });
