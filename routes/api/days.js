@@ -16,10 +16,13 @@ router.get('/api/days', function (req, res, next) {
 });
 
 //get one specific day
-router.get('/api/days/:id', function(req, res, next) {
-	Day.findById(req.params.id).exec().then(function(day) {
-		res.json(day);
-	});
+router.get('/api/days/:number', function(req, res, next) {
+	Day.findOne({ number: req.params.number })
+		.populate('hotel activities restaurants')
+		.exec()
+	   	.then(function(day) {
+			res.json(day);
+		});
 });
 
 //delete a day
@@ -153,15 +156,15 @@ router.delete('/api/days/:id/:type', function (req, res, next) {
 			var i = day.restaurants.indexOf(req.body.place._id);
 			day.restaurants.splice(i, 1);
 			return day.save();
-		}).then(function() {
-			res.send('Day updated.');
+		}).then(function(day) {
+			res.send(day);
 		});
 	} else if (req.params.type === 'hotel') {
 		Day.findOne({number: number}).exec().then(function(day) {
 			day.hotel = null;
 			return day.save();
-		}).then(function() {
-			res.send('Day updated.');
+		}).then(function(day) {
+			res.send(day);
 		});
 		
 	} else if (req.params.type === 'activities') {
@@ -169,8 +172,8 @@ router.delete('/api/days/:id/:type', function (req, res, next) {
 			var i = day.activities.indexOf(req.body.place._id);
 			day.activities.splice(i, 1);
 			return day.save();
-		}).then(function() {
-			res.send('Day updated.');
+		}).then(function(day) {
+			res.send(day);
 		});
 	}	
 });

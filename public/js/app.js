@@ -44,7 +44,11 @@ $(function () {
     var loadAllDays = function() {
         $.get('/api/days', function(data) {
             days = data;
-            setDayButtons();
+			if (!days.length) {
+				$addDayButton.trigger('click');
+			}
+			setDayButtons();
+			setDay(1);
             //TODO: show all itinerary items also
         });
     };
@@ -143,6 +147,22 @@ $(function () {
         //     $('#' + place.section + '-list').find('ul').append(createItineraryItem(place.place.name));
         //     place.marker.setMap(map);
         // });
+		
+		$.get('/api/days/' + currentDay, function(data) {
+			console.log('Data from get single day request:');
+			console.dir(data);
+			if (data.hotel) $('#hotel-list').find('ul').append(createItineraryItem(data.hotel.name));
+			if (data.restaurants.length > 0) {
+				data.restaurants.forEach(function(restaurant) {
+					$('#restaurants-list').find('ul').append(createItineraryItem(restaurant.name));
+				});
+			}
+			if (data.activities.length > 0) {
+				data.activities.forEach(function(activity) {
+					$('#activities-list').find('ul').append(createItineraryItem(activity.name));
+				});
+			}
+		})
 
         $dayButtons.removeClass('current-day');
         $dayButtons.eq(dayNum - 1).addClass('current-day');
@@ -195,13 +215,21 @@ $(function () {
 
         var $this = $(this);
         var $listItem = $this.parent().parent();
+		var sectionName = $listItem.parent().parent().attr('id').split('-')[0];
         var nameOfPlace = $this.siblings('span').text();
         var indexOfThisPlaceInDay = getIndexOfPlace(nameOfPlace, days[currentDay - 1]);
         var placeInDay = days[currentDay - 1][indexOfThisPlaceInDay];
 
-        placeInDay.marker.setMap(null);
-        days[currentDay - 1].splice(indexOfThisPlaceInDay, 1);
-        $listItem.remove();
+//        placeInDay.marker.setMap(null);
+		$.ajax({
+			method: 'DELETE',
+			url: '/api/days/' + currentDay + '/' + sectionName,
+			data: { placeName: nameOfPlace },
+			success: function(data) {
+				$listItem.remove();				
+			}
+		})
+//        days[currentDay - 1].splice(indexOfThisPlaceInDay, 1);
 
     });
 
