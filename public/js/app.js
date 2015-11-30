@@ -6,6 +6,8 @@ $(function () {
         // []
     ];
 
+    var mapMarkers = [];
+
     var currentDay = 1;
 
     var placeMapIcons = {
@@ -49,7 +51,6 @@ $(function () {
 			}
 			setDayButtons();
 			setDay(1);
-            //TODO: show all itinerary items also
         });
     };
 
@@ -77,6 +78,7 @@ $(function () {
         return $('<button class="btn btn-circle day-btn"></button>').text(dayNum);
     };
 
+
     var reset = function () {
 
         var dayPlaces = days[currentDay - 1];
@@ -85,6 +87,15 @@ $(function () {
         $placeLists.empty();
 
         //TODO: dayPlaces is an object, not an array
+
+        console.dir(dayPlaces);
+
+        Object.keys(dayPlaces).forEach(function(key){
+            if (key === 'hotel') {
+
+            }
+
+        });
 
         // dayPlaces.forEach(function (place) {
         //     place.marker.setMap(null);
@@ -113,13 +124,16 @@ $(function () {
     var mapFit = function () {
 
         var bounds = new google.maps.LatLngBounds();
-        var currentPlaces = days[currentDay - 1];
+        // var currentPlaces = days[currentDay - 1];
 
         //TODO: fix below to work with object rather than array
 
         // currentPlaces.forEach(function (place) {
         //     bounds.extend(place.marker.position);
         // });
+        mapMarkers.forEach(function(marker){
+            bounds.extend(marker.position);
+        });
 
         map.fitBounds(bounds);
 
@@ -188,9 +202,7 @@ $(function () {
 
         // var placeObj = getPlaceObject(sectionName, placeName);
 
-        // var createdMapMarker = drawLocation(map, placeObj.place[0].location, {
-        //     icon: placeMapIcons[sectionName]
-        // });
+
 
         // days[currentDay - 1].push({place: placeObj, marker: createdMapMarker, section: sectionName});
 
@@ -207,6 +219,12 @@ $(function () {
                     //     })
                     // });
                     $listToAppendTo.append(createItineraryItem(place.name));
+                    console.log("adding an item, here's the place: ");
+                    console.dir(place);
+                    var createdMapMarker = drawLocation(map, place.place[0].location, {
+            icon: placeMapIcons[sectionName]
+        });
+                    mapMarkers.push(createdMapMarker);
                     mapFit();
                 });  
     });
