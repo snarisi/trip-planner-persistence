@@ -29,12 +29,15 @@ router.delete('/api/days/:id', function (req, res, next) {
 
 //add a new day
 router.post('/api/days', function (req, res, next) {
-	Day.find({}).exec().then(function(days) {
-		console.log('DAYS: ', days);
-		return Day.create({number: days.length + 1});
-	}).then(function() {
-		console.log('day created');
-		res.send('Day created');
+	Day.find({})
+	.sort({number: -1})
+	.limit(1)
+	.exec().then(function(days) {
+		//console.log('DAYS: ', days);
+		return Day.create({number: days[0].number + 1});
+	}).then(function(day) {
+		//console.log('day created');
+		res.json(day);
 	});
 });
 

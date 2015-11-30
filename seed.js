@@ -7,6 +7,11 @@ var models = require('./models');
 var Place = models.Place;
 
 var data = {
+    Day: [
+        {number: 1},
+        {number: 2},
+        {number: 3}
+    ],
   Hotel: [
     {name: "Andaz Wall Street", place: [new Place({address: "75 Wall St", city: "New York", state: "NY", phone: "123-456-7890", location: [40.705137, -74.007624]})], num_stars: 4, amenities: "Pool, Free Wi-Fi" },
     {name: "Hotel Mulberry", place: [new Place({address: "52 Mulberry St", city: "New York", state: "NY", phone: "123-456-7890", location: [40.715317, -73.999542]})], num_stars: 4.5, amenities: "Free Wi-Fi" },
