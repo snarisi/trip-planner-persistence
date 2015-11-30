@@ -2,6 +2,7 @@ var express = require('express');
 var morgan = require('morgan');
 var bodyParser = require('body-parser');
 var swig = require('swig');
+var dayRoutes = require('./routes/api/days');
 
 var app = express();
 
@@ -24,6 +25,7 @@ app.use(express.static(__dirname + '/public'));
 
 // serve dynamic routes
 app.use(require('./routes'));
+app.use(dayRoutes);
 
 // failed to catch req above means 404, forward to error handler
 app.use(function(req, res, next) {
