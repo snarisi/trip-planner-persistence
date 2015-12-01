@@ -6,7 +6,7 @@ $(function () {
         // []
     ];
 
-    var mapMarkers = [];
+    var mapMarkers = {};
 
     var currentDay = 1;
 
@@ -97,9 +97,9 @@ $(function () {
 
         });
 
-        // dayPlaces.forEach(function (place) {
-        //     place.marker.setMap(null);
-        // });
+        Object.keys(mapMarkers).forEach(function(markerKey){
+             mapMarkers[markerKey].setMap(null);
+         });
 
     };
 
@@ -131,8 +131,8 @@ $(function () {
         // currentPlaces.forEach(function (place) {
         //     bounds.extend(place.marker.position);
         // });
-        mapMarkers.forEach(function(marker){
-            bounds.extend(marker.position);
+        Object.keys(mapMarkers).forEach(function(markerKey){
+            bounds.extend(mapMarkers[markerKey].position);
         });
 
         map.fitBounds(bounds);
@@ -157,25 +157,38 @@ $(function () {
 
         //TODO: placesForThisDay is an object, not an array
 
-        // placesForThisDay.forEach(function (place) {
-        //     $('#' + place.section + '-list').find('ul').append(createItineraryItem(place.place.name));
-        //     place.marker.setMap(map);
-        // });
 		
 		$.get('/api/days/' + currentDay, function(data) {
 			console.log('Data from get single day request:');
-			console.dir(data);
-			if (data.hotel) $('#hotel-list').find('ul').append(createItineraryItem(data.hotel.name));
+            var newMarker;
+          
+			if (data.hotel) {
+              $('#hotel-list').find('ul').append(createItineraryItem(data.hotel.name));
+              newMarker = drawLocation(map, data.hotel.place[0].location, {icon: placeMapIcons['hotels']});
+              mapMarkers[data.hotel.name] = newMarker;
+            }
 			if (data.restaurants.length > 0) {
 				data.restaurants.forEach(function(restaurant) {
 					$('#restaurants-list').find('ul').append(createItineraryItem(restaurant.name));
+                    newMarker = drawLocation(map, restaurant.place[0].location, {icon: placeMapIcons['restaurants']});
+                    mapMarkers[restaurant.name] = newMarker;
 				});
 			}
 			if (data.activities.length > 0) {
 				data.activities.forEach(function(activity) {
 					$('#activities-list').find('ul').append(createItineraryItem(activity.name));
+                    newMarker = drawLocation(map, activity.place[0].location, {icon: placeMapIcons['activities']});
+                    mapMarkers[activity.name] = newMarker;
 				});
 			}
+            console.dir(mapMarkers);
+            mapFit();
+//            var createdMapMarker = drawLocation(map, place.place[0].location, {
+//            icon: placeMapIcons[sectionName]
+//
+//           placesForThisDay.forEach(function (place) {
+//               place.marker.setMap(map);
+//           });
 		})
 
         $dayButtons.removeClass('current-day');
@@ -186,7 +199,7 @@ $(function () {
 
         $dayTitle.children('span').text('Day ' + dayNum.toString());
 
-        mapFit();
+//        mapFit();
 
     };
 
@@ -219,12 +232,14 @@ $(function () {
                     //     })
                     // });
                     $listToAppendTo.append(createItineraryItem(place.name));
-                    console.log("adding an item, here's the place: ");
-                    console.dir(place);
+//                    console.log("adding an item, here's the place: ");
+//                    console.dir(place);
+                    if (sectionName === 'hotel') sectionName = 'hotels';
+
                     var createdMapMarker = drawLocation(map, place.place[0].location, {
             icon: placeMapIcons[sectionName]
         });
-                    mapMarkers.push(createdMapMarker);
+                    mapMarkers[place.name] = createdMapMarker;
                     mapFit();
                 });  
     });
@@ -238,8 +253,13 @@ $(function () {
         var indexOfThisPlaceInDay = getIndexOfPlace(nameOfPlace, days[currentDay - 1]);
         var placeInDay = days[currentDay - 1][indexOfThisPlaceInDay];
 
-//        placeInDay.marker.setMap(null);
-		$.ajax({
+        mapMarkers[nameOfPlace].setMap(null);
+//        console.dir(mapMarkers);
+        
+        delete mapMarkers[nameOfPlace];
+//        console.dir(mapMarkers);
+
+        $.ajax({
 			method: 'DELETE',
 			url: '/api/days/' + currentDay + '/' + sectionName,
 			data: { placeName: nameOfPlace },
